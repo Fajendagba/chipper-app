@@ -11,8 +11,8 @@ export const usePosts = defineStore('posts', () => {
     posts.value = response.data
   }
 
-  async function createPost (title, body) {
-    const response = await $api.post('/posts', { title, body })
+  async function createPost (data) {
+    const response = await $api.post('/posts', data)
     posts.value.unshift(response.data)
     return response.data
   }

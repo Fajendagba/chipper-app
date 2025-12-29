@@ -71,6 +71,11 @@ async function toggleFavorite () {
     <p>
       {{ post.body }}
     </p>
+    <img
+      v-if="post.image_url"
+      :src="post.image_url"
+      :alt="post.title"
+      class="rounded-lg max-w-full">
     <button
       v-if="!user.isGuest"
       :disabled="loadingFavorite"
