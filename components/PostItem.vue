@@ -1,12 +1,35 @@
 <script setup>
 import { HeartIcon } from '@heroicons/vue/24/outline'
 
-defineProps({
+const props = defineProps({
   post: {
     type: Object,
     required: true
   }
 })
+
+const user = useUser()
+const favoritesStore = useFavorites()
+const { showErrorModal } = useHelpers()
+
+const isFollowed = computed(() => favoritesStore.isUserFollowed(props.post.user.id))
+const loading = ref(false)
+
+async function toggleFollow () {
+  loading.value = true
+
+  try {
+    if (isFollowed.value) {
+      await favoritesStore.unfollowUser(props.post.user.id)
+    } else {
+      await favoritesStore.followUser(props.post.user)
+    }
+  } catch (e) {
+    showErrorModal(e)
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -18,8 +41,13 @@ defineProps({
       <div>
         by <strong>{{ post.user.name }}</strong>
       </div>
-      <button class="font-medium bg-blue-200 text-sm px-2 rounded-full">
-        Follow
+      <button
+        v-if="!user.isGuest"
+        :disabled="loading"
+        :class="isFollowed ? 'bg-blue-500 text-white' : 'bg-blue-200'"
+        class="font-medium text-sm px-2 rounded-full"
+        @click="toggleFollow">
+        {{ isFollowed ? 'Unfollow' : 'Follow' }}
       </button>
     </div>
     <p>
