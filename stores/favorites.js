@@ -5,6 +5,7 @@ export const useFavorites = defineStore('favorites', () => {
   const favoritePosts = ref([])
 
   const favoriteUserIds = computed(() => favoriteUsers.value.map(u => u.id))
+  const favoritePostIds = computed(() => favoritePosts.value.map(p => p.id))
 
   async function fetchFavorites () {
     const response = await $api.get('/favorites')
@@ -26,14 +27,32 @@ export const useFavorites = defineStore('favorites', () => {
     favoriteUsers.value = favoriteUsers.value.filter(u => u.id !== userId)
   }
 
+  function isPostFavorited (postId) {
+    return favoritePostIds.value.includes(postId)
+  }
+
+  async function favoritePost (post) {
+    await $api.post(`/posts/${post.id}/favorite`)
+    favoritePosts.value.push(post)
+  }
+
+  async function unfavoritePost (postId) {
+    await $api.delete(`/posts/${postId}/favorite`)
+    favoritePosts.value = favoritePosts.value.filter(p => p.id !== postId)
+  }
+
   return {
     favoriteUsers,
     favoritePosts,
     favoriteUserIds,
+    favoritePostIds,
     fetchFavorites,
     isUserFollowed,
     followUser,
-    unfollowUser
+    unfollowUser,
+    isPostFavorited,
+    favoritePost,
+    unfavoritePost
   }
 })
 

@@ -13,10 +13,12 @@ const favoritesStore = useFavorites()
 const { showErrorModal } = useHelpers()
 
 const isFollowed = computed(() => favoritesStore.isUserFollowed(props.post.user.id))
-const loading = ref(false)
+const isFavorited = computed(() => favoritesStore.isPostFavorited(props.post.id))
+const loadingFollow = ref(false)
+const loadingFavorite = ref(false)
 
 async function toggleFollow () {
-  loading.value = true
+  loadingFollow.value = true
 
   try {
     if (isFollowed.value) {
@@ -27,7 +29,23 @@ async function toggleFollow () {
   } catch (e) {
     showErrorModal(e)
   } finally {
-    loading.value = false
+    loadingFollow.value = false
+  }
+}
+
+async function toggleFavorite () {
+  loadingFavorite.value = true
+
+  try {
+    if (isFavorited.value) {
+      await favoritesStore.unfavoritePost(props.post.id)
+    } else {
+      await favoritesStore.favoritePost(props.post)
+    }
+  } catch (e) {
+    showErrorModal(e)
+  } finally {
+    loadingFavorite.value = false
   }
 }
 </script>
@@ -43,7 +61,7 @@ async function toggleFollow () {
       </div>
       <button
         v-if="!user.isGuest"
-        :disabled="loading"
+        :disabled="loadingFollow"
         :class="isFollowed ? 'bg-blue-500 text-white' : 'bg-blue-200'"
         class="font-medium text-sm px-2 rounded-full"
         @click="toggleFollow">
@@ -53,11 +71,16 @@ async function toggleFollow () {
     <p>
       {{ post.body }}
     </p>
-    <button class="bg-red-200 text-red-500 flex items-center justify-center gap-2 p-4 rounded-lg">
+    <button
+      v-if="!user.isGuest"
+      :disabled="loadingFavorite"
+      :class="isFavorited ? 'bg-red-500 text-white' : 'bg-red-200 text-red-500'"
+      class="flex items-center justify-center gap-2 p-4 rounded-lg"
+      @click="toggleFavorite">
       <HeartIcon
         class="h-6 stroke-current" />
       <span class="font-bold">
-        Add to my favorites
+        {{ isFavorited ? 'Remove from favorites' : 'Add to my favorites' }}
       </span>
     </button>
   </div>
